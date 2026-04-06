@@ -1,4 +1,12 @@
 import { useState, useEffect } from "react";
+import {
+    Container,
+    Typography,
+    Button,
+    Box,
+    Paper,
+    LinearProgress,
+} from "@mui/material";
 import Question from "./Question";
 
 export default function Game() {
@@ -6,6 +14,7 @@ export default function Game() {
     const [questionNumber, setQuestionNumber] = useState(0);
     const [questions, setQuestions] = useState([]);
     const [showNextQuestion, setShowNextQuestion] = useState(false);
+    const [gameCompleted, setGameCompleted] = useState(false);
 
     useEffect(() => {
         const getQuestions = async () => {
@@ -32,7 +41,12 @@ export default function Game() {
         if (isCorrect) {
             setScore((prev) => prev + 1);
         }
-        setShowNextQuestion(true);
+
+        if (questionNumber >= questions.length - 1) {
+            setGameCompleted(true);
+        } else {
+            setShowNextQuestion(true);
+        }
     };
 
     const handleNext = () => {
@@ -43,27 +57,80 @@ export default function Game() {
     };
 
     return (
-        <>
-            <h2>Score: {score} </h2>
-            {questions.length > 0 ? (
-                <Question
-                    questionData={questions[questionNumber]}
-                    onAnswer={handleUpdateAnswer}
-                ></Question>
-            ) : (
-                <p>Loading questions...</p>
-            )}
-            <button
-                onClick={handleNext}
-                disabled={
-                    !questions ||
-                    questions.length === 0 ||
-                    questionNumber >= questions.length - 1 ||
-                    !showNextQuestion
-                }
-            >
-                Next Question
-            </button>
-        </>
+        <Container maxWidth="md" sx={{ py: 4 }}>
+            <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+                <Typography
+                    variant="h4"
+                    component="h1"
+                    gutterBottom
+                    align="center"
+                    color="primary"
+                >
+                    Trivia Game
+                </Typography>
+                <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                        {gameCompleted
+                            ? `Final Score: ${score}/10`
+                            : `Score: ${score}`}
+                    </Typography>
+                </Box>
+                {gameCompleted && (
+                    <Box sx={{ textAlign: "center", mb: 3 }}>
+                        <Typography variant="h5" color="primary" gutterBottom>
+                            Game Completed!
+                        </Typography>
+                        <Typography variant="body1">
+                            You answered {score} out of 10 questions correctly!
+                        </Typography>
+                    </Box>
+                )}
+                {questions.length > 0 && !gameCompleted ? (
+                    <Question
+                        key={questionNumber}
+                        questionData={questions[questionNumber]}
+                        onAnswer={handleUpdateAnswer}
+                    />
+                ) : !gameCompleted ? (
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            py: 4,
+                        }}
+                    >
+                        <Typography variant="h6" gutterBottom>
+                            Loading questions...
+                        </Typography>
+                        <LinearProgress sx={{ width: "100%", maxWidth: 300 }} />
+                    </Box>
+                ) : null}
+                {!gameCompleted && (
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            mt: 3,
+                        }}
+                    >
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleNext}
+                            disabled={
+                                !questions ||
+                                questions.length === 0 ||
+                                questionNumber >= questions.length - 1 ||
+                                !showNextQuestion
+                            }
+                            size="large"
+                        >
+                            Next Question
+                        </Button>
+                    </Box>
+                )}
+            </Paper>
+        </Container>
     );
 }
