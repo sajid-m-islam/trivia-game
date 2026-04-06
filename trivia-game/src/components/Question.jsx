@@ -1,44 +1,51 @@
 import { useState, useEffect } from "react";
 
-export default function Question() {
-    const [question, setQuestion] = useState("");
+export default function Question({ questionData, onAnswer }) {
     const [choices, setChoices] = useState([]);
-    const [correctAnswer, setCorrectAnswer] = useState("");
-
-    const getQuestions = async () => {
-        try {
-            const response = await fetch(
-                "https://opentdb.com/api.php?amount=10",
-            );
-            const data = await response.json();
-            console.log(data);
-
-            setQuestion(data.results[0].question);
-            setCorrectAnswer(data.results[0].correct_answer);
-
-            const allChoices = [
-                data.results[0].correct_answer,
-                ...data.results[0].incorrect_answers,
-            ];
-            setChoices(allChoices);
-        } catch (error) {
-            console.error("Error occured: ", error);
-        }
-    };
+    const [selected, setSelected] = useState("");
+    const [message, setMessage] = useState("");
 
     useEffect(() => {
-        getQuestions();
-    }, []);
+        const allChoices = [
+            questionData.correct_answer,
+            ...questionData.incorrect_answers,
+        ];
+
+        setChoices(allChoices);
+        setSelected("");
+        setMessage("");
+    }, [questionData]);
+
+    const handleClick = (choice) => {
+        setSelected(choice);
+        const isCorrect = choice === questionData.correct_answer;
+
+        onAnswer(isCorrect);
+        setMessage(isCorrect ? "Correct!" : "Incorrect");
+    };
 
     return (
         <>
-            <h3>Question: {question}</h3>
-            <p>Correct answer: {correctAnswer}</p>
-            <ul>
-                {choices.map((choice) => (
-                    <li>{choice}</li>
-                ))}
-            </ul>
+            <h3>Question: {questionData.question}</h3>
+            <p>Correct answer: {questionData.correct_answer}</p>
+            <div>
+                <ul>
+                    {choices.map((choice, index) => (
+                        <button
+                            key={index}
+                            onClick={() => handleClick(choice)}
+                            disabled={selected !== ""}
+                        >
+                            {choice}
+                        </button>
+                    ))}
+                </ul>
+            </div>
+            {selected && (
+                <div>
+                    <p>{message}</p>
+                </div>
+            )}
         </>
     );
 }

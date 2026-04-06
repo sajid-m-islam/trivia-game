@@ -1,11 +1,11 @@
 import { useState } from "react";
-import Question from "./components/Question";
+import Game from "./components/Game";
 
 function App() {
     return (
         <>
             <h1>Trivia Game</h1>
-            <Question></Question>
+            <Game></Game>
         </>
     );
 }
